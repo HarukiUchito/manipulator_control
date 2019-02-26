@@ -13,7 +13,7 @@ double fix2double (std::vector<unsigned char> &v) {
         vi += ((int32_t)v[i]) << (8*i);
     }
 
-    return vi / (double)(1<<dotPos);
+    return (double)vi / (double)(1<<dotPos);
 }
 
 template <int dotPos>
