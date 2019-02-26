@@ -67,16 +67,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         Eigen::Matrix<double, -1, -1> A = imex::Matrix<double>::InputWrapper(prhs[2]);
         std::vector<double> angles(3); // in radian
         for (int i = 0; i < 3; ++i) angles[i] = deg2rad(A(i, 0));
-        
-        double num = 3.1435869583394859248449392;
-        std::cout << std::setprecision(30) << std::endl;
-        std::cout << num << std::endl;
-        std::vector<unsigned char> ucv = double2fix<10>(num);
-        double tnum = fix2double<10>(ucv);
-        std::cout << tnum << std::endl;
+
+        // double to fixed conversion to pass data to Connection class
+        std::vector<unsigned char> ucangles;
+        for (int i = 0; i < 3; ++i) {
+            auto uca = double2fix<10>(angles[i]);
+            for (int j = 0; j < uca.size(); ++j)
+                ucangles.push_back(uca[j]);
+        }
 
         Eigen::MatrixXd m(1, 1);
-        m(0, 0) = Connection_instance->receive(angles);
+        m(0, 0) = Connection_instance->receive(ucangles);
         plhs[0] = imex::Matrix<double>::OutputWrapper(m);
 
         return;

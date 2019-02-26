@@ -2,6 +2,7 @@
 #define MATH_UTILS_H
 
 #include <vector>
+#include <cstdint>
 
 double deg2rad (double degrees);
 

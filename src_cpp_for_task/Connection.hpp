@@ -24,9 +24,8 @@ class Connection
     int send(std::vector<double> &data);
 
     //receive state of the robot. record to data. use explicit pointer convertion
-    // this function increments the destination angles index if the difference between current angles and destination angles are small (below threshold).
-    // int receive(std::vector<unsigned char> &data);
-    int receive(std::vector<double> &data);
+    // this function increments the destination angles index if the difference between current angles and destination angles are small (below threshold "arrival_threshold").
+    int receive(std::vector<unsigned char> &data);
     
   private:
     const double control_period = 50.0; // used to split trajectory.
@@ -34,7 +33,7 @@ class Connection
     std::vector<Eigen::VectorXd> trj_points;
     std::vector<std::vector<double>> rangles;
     int rangle_idx; // current destination angle idx. this value is incremented in receive function
-    const double arrival_threshold = 1e-4;
+    const double arrival_threshold = 1e-2;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "Connection.hpp"
 #include "Spline3.hpp"
 #include "Manipulator.hpp"
+#include "Math_utils.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -59,12 +60,18 @@ void Connection::calcTrajectory() {
     rangle_idx = 0;
 }
 
-int Connection::receive(std::vector<double> &data) {
+int Connection::receive(std::vector<unsigned char> &data) {
+    std::vector<double> rdata(3);
+    for (int i = 0; i < 3; ++i) {
+        auto first = data.begin() + 4 * i;
+        auto last = data.begin() + 4 * (i + 1);
+        std::vector<unsigned char> v(first, last);
+        rdata[i] = fix2double<10>(v);
+    }
     double diff = 0.0;
-    for (int i = 0; i < data.size(); ++i) {
-        //std::cout << "data " << data[i] << std::endl;
-        //std::cout << "rang " << rangles[rangle_idx][i] << std::endl;
-        diff += fabs(data[i] - rangles[rangle_idx][i]);
+    for (int i = 0; i < rdata.size(); ++i) {
+        diff += fabs(rdata[i] - rangles[rangle_idx][i]);
+        //std::cout << rdata[i] << " " << rangles[rangle_idx][i] <<  std::endl;
     }
     if (diff < arrival_threshold)
         rangle_idx++;
