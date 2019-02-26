@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 
 enum IK_method {
+    Exact,
     NewtonRaphson,
     LevenbergMarquardt,
 };

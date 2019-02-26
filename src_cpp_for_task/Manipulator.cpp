@@ -62,8 +62,18 @@ std::vector<double> Manipulator::inverseKinematics(
 
         Eigen::VectorXd da;
 
-        IK_method ikMethod = IK_method::LevenbergMarquardt;
+        IK_method ikMethod = IK_method::Exact;
+        //IK_method ikMethod = IK_method::LevenbergMarquardt;
         switch (ikMethod) {
+            case IK_method::Exact: {
+                double x = target(0), y = target(1), z = target(2);
+                c_angles[0] = atan2(y, x);
+                double xy = sqrt(x*x + y*y) - 10;
+                double d1 = (xy*xy + z*z + 5*5 - 5*5) / (2.0*5.0);
+                double d2 = (xy*xy + z*z - 5*5 + 5*5) / (2.0*5.0);
+                c_angles[1] = atan2(z, xy) - atan2(sqrt(xy*xy + z*z - d1*d1), d1);
+                c_angles[2] = atan2(sqrt(xy*xy + z*z - d1*d1), d1) + atan2(sqrt(xy*xy + z*z - d2*d2), d2);
+            } break;
             case IK_method::NewtonRaphson: {
                 da = jc.completeOrthogonalDecomposition().pseudoInverse() * diff;
             } break;
@@ -77,6 +87,8 @@ std::vector<double> Manipulator::inverseKinematics(
                 da = Hk.completeOrthogonalDecomposition().pseudoInverse() * gk;
             } break;
         }
+
+        if (ikMethod == IK_method::Exact) break;
 
         for (int i = 0; i < c_angles.size(); ++i)
             c_angles[i] += da(i);
@@ -128,7 +140,7 @@ Eigen::Matrix<double, 4, 4> Manipulator::getTransform(const int i, const double 
     double d = dh_params[i].d;
     double a = dh_params[i].a;
     double cl = cos(al), sl = sin(al);
-    double ct = cos(-th), st = sin(-th);
+    double ct = cos(th), st = sin(th);
     //std::cout << "used a " << dh_params[i].a << std::endl;
     /*
     ret << 

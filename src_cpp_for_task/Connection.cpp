@@ -48,7 +48,7 @@ void Connection::calcTrajectory() {
     p << sx.calc(t), sy.calc(t), sz.calc(t);
     trj_points.push_back(p);
 
-    // Joint angle calculation
+    // Joint angle calculation for each position
     Manipulator mp;
     int jnum = mp.open() - 1;
     std::vector<double> last(jnum, 0.0);
