@@ -82,12 +82,14 @@ int Connection::receive(std::vector<unsigned char> &data) {
     return 0;
 }
 
-int Connection::send(std::vector<double> &data) {
+int Connection::send(std::vector<unsigned char> &data) {
     if (rangle_idx >= rangles.size())
         return -1;
 
-    for (int i = 0; i < data.size(); ++i) {
-        data[i] = rangles[rangle_idx][i];
+    for (int i = 0; i < 3; ++i) {
+        auto ucv = double2fix<10>(rangles[rangle_idx][i]);
+        for (int j = 0; j < 4; ++j)
+            data[i * 4 + j] = ucv[j];
     }
 
     return 0;

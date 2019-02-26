@@ -87,12 +87,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         if (nlhs > 1 || nrhs < 2)
             mexErrMsgTxt("send: Unexpected arguments.");
 
-        std::vector<double> data(3);
+        std::vector<unsigned char> data(12);
         Connection_instance->send(data);
 
-        Eigen::MatrixXd m(data.size(), 1);
-        for (int i = 0; i < data.size(); ++i) {
-            m(i, 0) = data[i];
+        std::vector<double> rdata(3);
+        for (int i = 0; i < 3; ++i) {
+            auto first = data.begin() + 4 * i;
+            auto last = data.begin() + 4 * (i + 1);
+            std::vector<unsigned char> v(first, last);
+            rdata[i] = fix2double<10>(v);
+        }
+
+        Eigen::MatrixXd m(rdata.size(), 1);
+        for (int i = 0; i < rdata.size(); ++i) {
+            m(i, 0) = rdata[i];
         }
         plhs[0] = imex::Matrix<double>::OutputWrapper(m);
         return;

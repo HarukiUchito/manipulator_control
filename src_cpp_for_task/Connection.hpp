@@ -19,9 +19,8 @@ class Connection
     void out2DSpline(std::vector<double> &ox, std::vector<double> &oy, std::vector<double> &oz);
     void outRangles(std::vector<double> &a1, std::vector<double> &a2, std::vector<double> &a3);
 
-    //int send(std::vector<unsigned char> &data)
     //send data to the robot. use explicit pointer convertion
-    int send(std::vector<double> &data);
+    int send(std::vector<unsigned char> &data);
 
     //receive state of the robot. record to data. use explicit pointer convertion
     // this function increments the destination angles index if the difference between current angles and destination angles are small (below threshold "arrival_threshold").
