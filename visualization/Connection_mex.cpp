@@ -9,6 +9,7 @@
 #include <imex/SparseCore>
 
 #include <iostream>
+#include <iomanip>
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {	
@@ -67,6 +68,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         std::vector<double> angles(3); // in radian
         for (int i = 0; i < 3; ++i) angles[i] = deg2rad(A(i, 0));
         
+        double num = 3.1435869583394859248449392;
+        std::cout << std::setprecision(30) << std::endl;
+        std::cout << num << std::endl;
+        std::vector<unsigned char> ucv = double2fix<10>(num);
+        double tnum = fix2double<10>(ucv);
+        std::cout << tnum << std::endl;
+
         Eigen::MatrixXd m(1, 1);
         m(0, 0) = Connection_instance->receive(angles);
         plhs[0] = imex::Matrix<double>::OutputWrapper(m);
