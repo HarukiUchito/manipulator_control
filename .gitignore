@@ -1,3 +1,5 @@
+eigen/*
+imex/*
 
 # MATLAB
 *.mexw64
