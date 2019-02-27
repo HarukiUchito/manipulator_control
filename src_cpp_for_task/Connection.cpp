@@ -31,60 +31,64 @@ int Connection::open() {
 }
 
 void Connection::calcTrajectory() {
-    // Joint angle calculation for each given points
     Manipulator mp;
-    mp.open();
-    
-    std::vector<double> th0, th1, th2;
-    for (int i = 0; i < tx.size(); ++i) {
-        Eigen::VectorXd target(3);
-        target << tx[i], ty[i], tz[i];
-        
-        auto ret = mp.inverseKinematics(target, std::vector<double>({0,0,0}));
-        th0.push_back(ret[0]);
-        th1.push_back(ret[1]);
-        th2.push_back(ret[2]);
-    }
+    int jnum = mp.open() - 1;
 
-    Spline3 s0(th0), s1(th1), s2(th2);
-    for (int i = 0; i < ts.size()-1; ++i) {
-        double time_difference = ts[i+1] - ts[i];
-        int control_cnt = (int)(control_period * time_difference);
-        for (int j = 0; j < control_cnt; ++j) {
-            double t = (double)i + (double)j / (double)control_cnt;
-            rangles.push_back(std::vector<double>({s0.calc(t), s1.calc(t), s2.calc(t)}));
-        }
-    }
-    rangle_idx = 0;
-/*
-    // Spline interpolation in cartesian space
-    Spline3 sx(tx), sy(ty), sz(tz);
-    for (int i = 0; i < ts.size()-1; ++i) {
-        double time_difference = ts[i+1] - ts[i];
-        int control_cnt = (int)(control_period * time_difference);
-        for (int j = 0; j < control_cnt; ++j) {
-            double t = (double)i + (double)j / (double)control_cnt;
+    TI_method tiMethod = TI_method::SplineInConfiguraion;
+    switch (tiMethod) {
+        case TI_method::SplineInCartesian: {
+            // Spline interpolation of given points
+            Spline3 sx(tx), sy(ty), sz(tz);
+            for (int i = 0; i < ts.size()-1; ++i) {
+                double time_difference = ts[i+1] - ts[i];
+                int control_cnt = (int)(control_period * time_difference);
+                for (int j = 0; j < control_cnt; ++j) {
+                    double t = (double)i + (double)j / (double)control_cnt;
+                    Eigen::VectorXd p(3);
+                    p << sx.calc(t), sy.calc(t), sz.calc(t);
+                    trj_points.push_back(p);
+                }
+            }
+            double t = ts[ts.size()-1];
             Eigen::VectorXd p(3);
             p << sx.calc(t), sy.calc(t), sz.calc(t);
             trj_points.push_back(p);
-        }
-    }
-    double t = ts[ts.size()-1];
-    Eigen::VectorXd p(3);
-    p << sx.calc(t), sy.calc(t), sz.calc(t);
-    trj_points.push_back(p);
 
-    // Joint angle calculation for each position
-    Manipulator mp;
-    int jnum = mp.open() - 1;
-    std::vector<double> last(jnum, 0.0);
-    for (int j = 0; j < trj_points.size(); ++j) {
-        rangles.push_back(mp.inverseKinematics(trj_points[j], last));
-        for (int i = 0; i < jnum; ++i)
-            last[i] = rangles[rangles.size()-1][i];
+            // Joint angle calculation for each point
+            std::vector<double> last(jnum, 0.0);
+            for (int j = 0; j < trj_points.size(); ++j) {
+                rangles.push_back(mp.inverseKinematics(trj_points[j], last));
+                for (int i = 0; i < jnum; ++i)
+                    last[i] = rangles[rangles.size()-1][i];
+            }
+        } break;
+        case TI_method::SplineInConfiguraion: {
+            // Joint angle calculation for each given points
+            std::vector<double> th0, th1, th2;
+            for (int i = 0; i < tx.size(); ++i) {
+                Eigen::VectorXd target(3);
+                target << tx[i], ty[i], tz[i];
+                
+                auto ret = mp.inverseKinematics(target, std::vector<double>({0,0,0}));
+                th0.push_back(ret[0]);
+                th1.push_back(ret[1]);
+                th2.push_back(ret[2]);
+            }
+
+            // Spline interpolation of angles 
+            Spline3 s0(th0), s1(th1), s2(th2);
+            for (int i = 0; i < ts.size()-1; ++i) {
+                double time_difference = ts[i+1] - ts[i];
+                int control_cnt = (int)(control_period * time_difference);
+                for (int j = 0; j < control_cnt; ++j) {
+                    double t = (double)i + (double)j / (double)control_cnt;
+                    rangles.push_back(std::vector<double>({s0.calc(t), s1.calc(t), s2.calc(t)}));
+                }
+            }
+        } break;
     }
+
     rangle_idx = 0;
-*/
 }
 
 int Connection::receive(std::vector<unsigned char> &data) {

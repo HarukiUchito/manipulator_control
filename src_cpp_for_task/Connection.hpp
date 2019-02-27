@@ -5,6 +5,12 @@
 
 #include <Eigen/Core>
 
+// TI - trajecory interpolation
+enum TI_method {
+    SplineInCartesian,
+    SplineInConfiguraion,
+};
+
 class Connection
 {
   public:
