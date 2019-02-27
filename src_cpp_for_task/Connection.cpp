@@ -31,7 +31,33 @@ int Connection::open() {
 }
 
 void Connection::calcTrajectory() {
-    // Spline interpolation
+    // Joint angle calculation for each given points
+    Manipulator mp;
+    mp.open();
+    
+    std::vector<double> th0, th1, th2;
+    for (int i = 0; i < tx.size(); ++i) {
+        Eigen::VectorXd target(3);
+        target << tx[i], ty[i], tz[i];
+        
+        auto ret = mp.inverseKinematics(target, std::vector<double>({0,0,0}));
+        th0.push_back(ret[0]);
+        th1.push_back(ret[1]);
+        th2.push_back(ret[2]);
+    }
+
+    Spline3 s0(th0), s1(th1), s2(th2);
+    for (int i = 0; i < ts.size()-1; ++i) {
+        double time_difference = ts[i+1] - ts[i];
+        int control_cnt = (int)(control_period * time_difference);
+        for (int j = 0; j < control_cnt; ++j) {
+            double t = (double)i + (double)j / (double)control_cnt;
+            rangles.push_back(std::vector<double>({s0.calc(t), s1.calc(t), s2.calc(t)}));
+        }
+    }
+    rangle_idx = 0;
+/*
+    // Spline interpolation in cartesian space
     Spline3 sx(tx), sy(ty), sz(tz);
     for (int i = 0; i < ts.size()-1; ++i) {
         double time_difference = ts[i+1] - ts[i];
@@ -58,6 +84,7 @@ void Connection::calcTrajectory() {
             last[i] = rangles[rangles.size()-1][i];
     }
     rangle_idx = 0;
+*/
 }
 
 int Connection::receive(std::vector<unsigned char> &data) {
