@@ -1,0 +1,13 @@
+
+# MATLAB
+*.mexw64
+*.mexw32
+*.mexa64
+*.mexa32
+*.asv
+*.pdb
+*.exp
+*.mexw64.manifest
+
+*.pdf
+*.mp4
